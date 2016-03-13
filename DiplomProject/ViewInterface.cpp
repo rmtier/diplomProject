@@ -40,15 +40,36 @@ void ViewInterface::print(Aligment * aligment, long time, std::string algorithm)
 {
 	unsigned int i = 0;
 	unsigned int j = 0;
+	unsigned int l = 0;
 	unsigned int index = 0;
-	unsigned int index2 = 0;
 
 	std::cout << "\n\n";
 	std::cout << "Algorithm used for aligning: " << algorithm;
 	std::cout << "\nComputing aligning time:     " << time;
 	std::cout << "\nAligment:\n";
-
 	
+	while (aligment->getAligment()->size() > index)
+	{
+		i = 0;
+		while (i < NUMBEROFROWININTERFACE && aligment->getAligment()->size() > index + i)
+		{
+			std::cout << aligment->getAligment()->at(index + (i++)).first;
+		}
+		std::cout << "\n";
+		j = 0;
+		while (j < NUMBEROFROWININTERFACE && aligment->getAligment()->size() > index + j)
+		{
+			std::cout << ((aligment->getAligment()->at(index + j++).pipe == true) ? '|' : ' ');
+		}
+		std::cout << "\n";
+		l = 0;
+		while (l < NUMBEROFROWININTERFACE && aligment->getAligment()->size() >(index + l))
+		{
+			std::cout << aligment->getAligment()->at(index + l++).second;
+		}
+		index += NUMBEROFROWININTERFACE;
+		std::cout << "\n\n";
+	}
 }
 
 /*
