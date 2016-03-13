@@ -1,5 +1,5 @@
 #include "NeedlemanWunschAlgorithm.h"
-
+#include <stdlib.h>
 
 NeedlemanWunschAlgorithm::NeedlemanWunschAlgorithm()
 {
@@ -32,27 +32,23 @@ std::vector<aligmentStr> * NeedlemanWunschAlgorithm::alignSequences(std::vector<
 	int diagonalValue;
 	int maxValue;
 
-	matrixValue ** matrix = new matrixValue*[sizeOfVertical];
+	matrixValue ** matrix = ((matrixValue**)malloc(sizeOfVertical* sizeof(matrixValue*)));
 
 	for (int i = 0; i < sizeOfVertical; i++)
 	{
-		matrix[i] = new matrixValue[sizeOfHorizontal];
+		matrix[i] = ((matrixValue*) malloc(sizeOfHorizontal * sizeof(matrixValue)));
 	}
 
 	//init matrix with incrementaly added gaps to first horisontal and vertical row
-	for (int i = 0; i < sizeOfHorizontal; i++)
+	for (int j = 0; j < sizeOfHorizontal; j++)
 	{
-		matrix[0][i].ancestorDirection = NULL; //using in tracking back, end point
-		matrix[0][i].value = init;
-		matrix[0][i].ancestor = NULL;
+		matrix[0][j].value = init;
 		init += gap;
 	}
 	init = 0;
-	for (int j = 0; j < sizeOfVertical; j++)
+	for (int i = 0; i < sizeOfVertical; i++)
 	{
-		matrix[j][0].ancestorDirection = NULL; //using in tracking back, end point
-		matrix[j][0].ancestor = NULL;
-		matrix[j][0].value = init;
+		matrix[i][0].value = init;
 		init += gap;
 	}
 
@@ -61,7 +57,11 @@ std::vector<aligmentStr> * NeedlemanWunschAlgorithm::alignSequences(std::vector<
 	{
 		for (int j = 1; j < sizeOfHorizontal; j++)
 		{
-			arrow * direction = new arrow;
+			matrixValue direction;
+			direction.diagonal = 1;	//can be faster
+			direction.vertical = 1;
+			direction.horizontal = 1;
+
 			verticalValue = matrix[i - 1][j].value + gap;
 			horizontalValue = matrix[i][j - 1].value + gap;
 			if (firstSequence->at(j-1) == secondSequence->at(i-1))
@@ -72,31 +72,33 @@ std::vector<aligmentStr> * NeedlemanWunschAlgorithm::alignSequences(std::vector<
 			if (horizontalValue < verticalValue)
 			{
 				maxValue = verticalValue;
-				direction->vertical = true;
+				direction.vertical = 0;
 			} 
 			else if (horizontalValue == verticalValue)
 			{
 				maxValue = verticalValue;
-				direction->vertical = true;
-				direction->horizontal = true;
+				direction.vertical = 0;
+				direction.horizontal = 0;
 			}
 			else 
 			{
 				maxValue = horizontalValue;
-				direction->horizontal = true;
+				direction.horizontal = 0;
 			}
 			if (diagonalValue > maxValue){
 				maxValue = diagonalValue;
-				direction->diagonal = true;
-				direction->vertical = false;
-				direction->horizontal = false;
+				direction.diagonal = 0;
+				direction.vertical = 1;
+				direction.horizontal = 1;
 			}
 			else if (diagonalValue == maxValue)
 			{
-				direction->diagonal = true;
+				direction.diagonal = 0;
 			}
 			matrix[i][j].value = maxValue;
-			matrix[i][j].ancestorDirection = direction;
+			matrix[i][j].diagonal = direction.diagonal;	//can be faster
+			matrix[i][j].vertical = direction.vertical;
+			matrix[i][j].horizontal = direction.horizontal;
 		}
 	}
 	
@@ -107,9 +109,9 @@ std::vector<aligmentStr> * NeedlemanWunschAlgorithm::alignSequences(std::vector<
 	int iCoordinate = 0;
 	int jCoordinate = 0;
 	//finding highest value
-	for (; i >= 0; i--)
-	{
-		for (; j >= 0; j--)
+	//for (; i >= 0; i--)
+	//{
+		for (int i = 0; i < sizeOfVertical; i++)
 		{
 			if (maxValue < matrix[i][j].value)
 			{
@@ -118,59 +120,69 @@ std::vector<aligmentStr> * NeedlemanWunschAlgorithm::alignSequences(std::vector<
 				jCoordinate = j;
 			}
 		}
-	}
+	//}
 	//making aligment
 	matrixValue * last;
 	std::vector<aligmentStr> * aligment = new std::vector<aligmentStr>();
 	last = &matrix[iCoordinate][jCoordinate];
 	jCoordinate--; iCoordinate--;
-	while (last->ancestorDirection != NULL)
+	while (jCoordinate >= 0 && iCoordinate >= 0)
 	{
-		aligmentStr a;
-		if (last->ancestorDirection->diagonal == true)
+		aligmentStr * a = new aligmentStr;
+		if (last->diagonal == 0)
 		{
-			a.first = firstSequence->at(jCoordinate);
-			a.second = secondSequence->at(iCoordinate);
+			a->first = firstSequence->at(jCoordinate);
+			a->second = secondSequence->at(iCoordinate);
 			if (firstSequence->at(jCoordinate) == secondSequence->at(iCoordinate))
 			{
-				a.pipe = true;
+				a->pipe = true;
 			}
 			else
 			{
-				a.pipe = false;
+				a->pipe = false;
 			}
 			jCoordinate--;
 			iCoordinate--;
 		}
-		else if (last->ancestorDirection->vertical == true)
+		else if (last->vertical == 0)
 		{
-			a.first = '-';
-			a.second = secondSequence->at(iCoordinate);
+			a->first = '-';
+			a->second = secondSequence->at(iCoordinate);
 			iCoordinate--;
-			a.pipe = false;
+			a->pipe = false;
 		}
-		else if (last->ancestorDirection->horizontal = true)
+		else if (last->horizontal == 0)
 		{
-			a.first = firstSequence->at(jCoordinate);
-			a.second = '-';
+			a->first = firstSequence->at(jCoordinate);
+			a->second = '-';
 			jCoordinate--;
-			a.pipe = false;
+			a->pipe = false;
 		}
 		
-		aligment->insert(aligment->begin(), a);
-		last = &matrix[iCoordinate][jCoordinate];
+		aligment->insert(aligment->begin(), *a);
+		last = &matrix[iCoordinate+1][jCoordinate+1];
+		delete a;
 	}
-	aligmentStr a;
-	if (jCoordinate == 0)	//last part of aligment
+	aligmentStr * a = new aligmentStr;
+
+	if (jCoordinate == 0 && iCoordinate < 0) //one of coordinate have to be zero
 	{
-		a.first = '-';
-		a.second = secondSequence->at(iCoordinate);
+		a->first = firstSequence->at(jCoordinate);
+		a->second = '-';
+		aligment->insert(aligment->begin(), *a);
 	}
-	else
+	else if (iCoordinate == 0 && jCoordinate < 0)
 	{
-		a.first = firstSequence->at(jCoordinate);
-		a.second = '-';
+		a->first = '-';
+		a->second = secondSequence->at(iCoordinate);
+		aligment->insert(aligment->begin(), *a);
 	}
-	aligment->insert(aligment->begin(), a);
+
+	//free malloc memory
+	for (int i = 0; i < sizeOfVertical; i++)
+	{
+		free(matrix[i]);
+	}
+	free(matrix);
 	return aligment;
 }

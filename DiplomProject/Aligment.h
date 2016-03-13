@@ -17,7 +17,7 @@ class Aligment
 {
 	friend class MessageBuilder;
 private:
-	std::vector<char> * firstSequence;
+	std::vector<char> * firstSequence;	
 	std::vector<char> * secondSequence;
 	std::vector<aligmentStr> * aligment; //indexes in aligment
 	std::string algorithm;

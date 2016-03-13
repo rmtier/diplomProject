@@ -1,14 +1,11 @@
 #pragma once
 #include "AligmentAlgorithm.h"
-struct arrow{
-	bool horizontal = false;
-	bool vertical = false;
-	bool diagonal = false;
-};
+
 struct matrixValue{
 	int value;
-	matrixValue * ancestor;
-	arrow * ancestorDirection;
+	unsigned short horizontal : 1;
+	unsigned short vertical : 1;
+	unsigned short diagonal : 1;
 };
 
 /*

@@ -31,8 +31,8 @@ private:
 	std::vector<Task*> doListOfMessages; ///<Thinks to do>
 	void initConsole();
 	void clearConsole();
-	void readFromFiles(std::string inputFileName, std::string compareFileName, std::string outFileName);
-
+	void readFromFiles(std::string inputFileName, std::string compareFileName, std::string, int, int, int);
+	std::string outFile;
 };
 
 

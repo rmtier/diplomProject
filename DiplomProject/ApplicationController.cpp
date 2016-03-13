@@ -24,6 +24,7 @@ void ApplicationController::start()
 		aligment = calculation.calculateTask(interface.takeTask());
 		time = measureModule.stopMeasure();
 		interface.print(aligment, time, aligment->getAlgorithm());
+		delete aligment;
 	}
 	return;
 }

@@ -18,9 +18,15 @@ public:
 	std::vector<char> * getDNASequence() { return dnaSequence; }
 	std::vector<char> * getSearchingSequence(){ return searchingDNAsequence; }
 	ALGORITHM getAlgorithm(){ return algorithm; }
+	int getMatch(){ return match; }
+	int getMissmatch() { return missmatch; }
+	int getGap() { return gap; }
 private:
 	std::vector<char> * dnaSequence; //inputs string whitch is aligned with comparingString 
 	std::vector<char> * searchingDNAsequence; //aligment char array
 	ALGORITHM algorithm;
+	int match;
+	int missmatch;
+	int gap;
 };
 

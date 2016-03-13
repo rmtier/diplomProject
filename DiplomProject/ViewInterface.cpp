@@ -1,4 +1,5 @@
 #include "ViewInterface.h"
+#include <sstream>
 
 ViewInterface::ViewInterface()
 {
@@ -18,6 +19,8 @@ bool ViewInterface::continueComputing()
 	char inputChar[SIZEOFINPUTARRAY];
 	std::string inputFile;
 	std::string compareFile;
+	std::string outFile;
+	int match, missmatch, gap;
 
 	initConsole();
 	std::cout << "Zadaj vstupny subor s vzorkami genov:";
@@ -26,15 +29,26 @@ bool ViewInterface::continueComputing()
 		return false;
 	}
 	inputFile = inputChar;
-	std::cout << "\nZadaj porovnavaci subor:";
+	std::cout << "Zadaj subor s porovnavacou sekvenciou:";
 	std::cin >> inputChar;
 	if (strcmp(inputChar, "e") == 0){
 		return false;
 	}
 	compareFile = inputChar;
-	readFromFiles(inputFile, compareFile, "console");
+	std::cout << "Zadaj vystupny subor (v pripade zobrazenia do konzoly zadaj \"console\"):";
+	std::cin >> inputChar;
+	if (strcmp(inputChar, "e") == 0){
+		return false;
+	}
+	outFile = inputChar;
+	std::cout << "Zadaj parametre algoritmu (match missmatch gap): ";
+	std::cin >> match;
+	std::cin >> missmatch;
+	std::cin >> gap;
+	readFromFiles(inputFile, compareFile, outFile, match, missmatch, gap);
 	return true;
 }
+
 
 void ViewInterface::print(Aligment * aligment, long time, std::string algorithm)
 {
@@ -42,33 +56,46 @@ void ViewInterface::print(Aligment * aligment, long time, std::string algorithm)
 	unsigned int j = 0;
 	unsigned int l = 0;
 	unsigned int index = 0;
+	std::ofstream of;
+	std::ostream * out;
 
-	std::cout << "\n\n";
-	std::cout << "Algorithm used for aligning: " << algorithm;
-	std::cout << "\nComputing aligning time:     " << time;
-	std::cout << "\nAligment:\n";
+	if (outFile == "console")
+	{
+		out = &std::cout;
+		*out << "\n\n";
+		*out << "Algorithm used for aligning: " << algorithm;
+		*out << "\nComputing aligning time:     " << time;
+		*out << "\nAligment:\n";
+	}
+	else
+	{
+		of.open(this->outFile);
+		out = &of;
+		*out << "Algorithm: " << algorithm << "; Time CPU: " << time;
+		*out << "\n";
+	}
 	
 	while (aligment->getAligment()->size() > index)
 	{
 		i = 0;
 		while (i < NUMBEROFROWININTERFACE && aligment->getAligment()->size() > index + i)
 		{
-			std::cout << aligment->getAligment()->at(index + (i++)).first;
+			*out << aligment->getAligment()->at(index + i).first; i++;
 		}
-		std::cout << "\n";
+		*out << "\n";
 		j = 0;
 		while (j < NUMBEROFROWININTERFACE && aligment->getAligment()->size() > index + j)
 		{
-			std::cout << ((aligment->getAligment()->at(index + j++).pipe == true) ? '|' : ' ');
+			*out << ((aligment->getAligment()->at(index + j).pipe == true) ? '|' : ' '); j++;
 		}
-		std::cout << "\n";
+		*out << "\n";
 		l = 0;
-		while (l < NUMBEROFROWININTERFACE && aligment->getAligment()->size() >(index + l))
+		while (l < NUMBEROFROWININTERFACE && aligment->getAligment()->size() > ( index + l))
 		{
-			std::cout << aligment->getAligment()->at(index + l++).second;
+			*out << aligment->getAligment()->at(index + l).second; l++;
 		}
 		index += NUMBEROFROWININTERFACE;
-		std::cout << "\n\n";
+		*out << "\n\n";
 	}
 }
 
@@ -78,31 +105,41 @@ void ViewInterface::print(Aligment * aligment, long time, std::string algorithm)
 * @param compareFileName - name of File that contain aligning dna sequence(with array of dna sequences)
 * @param outFileName - name of output file(default console)
 */
-void ViewInterface::readFromFiles(std::string inputFileName, std::string compareFileName, std::string outFileName)
+void ViewInterface::readFromFiles(std::string inputFileName, std::string compareFileName, std::string outFileName, int match, int missmatch, int gap)
 {
 	std::ifstream inputFile;
 	std::ifstream compareFile;
-	std::ofstream outFile;
 	std::string buffer;
 	std::string comparingString;
 	std::string data;
+	std::stringstream inStream;
+	std::stringstream inStream2;
+	std::string trash;
 
 	try{
 		inputFile.open(inputFileName);
-		getline(inputFile, data);
+		getline(inputFile, trash);
+		while (getline(inputFile, data))
+		{
+			inStream << data;
+		}
 		inputFile.close();
 
 		compareFile.open(compareFileName);
-		getline(compareFile, comparingString);
+		getline(compareFile, trash);
+		while (getline(compareFile, comparingString))
+		{
+			inStream2 << comparingString;
+		}
 		compareFile.close();
+		this->outFile = outFileName;
 	}
 	catch (const char & e)
 	{
 		std::cout << e;
 	}
-
-	doListOfMessages.push_back(MessageBuilder::createTask(&data, &comparingString));
-
+	
+	doListOfMessages.push_back(MessageBuilder::createTask(&inStream.str(), &inStream2.str(), match, missmatch, gap));
 }
 
 void ViewInterface::initConsole()
