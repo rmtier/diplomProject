@@ -1,5 +1,6 @@
 #pragma once
-#include "NeedlemanWunschAlgorithm.h"
+#include "SmithWatermanAlgorithm.h"
+#include "BlastAlgorithm.h"
 #include "Aligment.h"
 #include "MessageBuilder.h"
 /*

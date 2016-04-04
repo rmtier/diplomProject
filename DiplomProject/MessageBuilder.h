@@ -21,7 +21,7 @@ public:
 	* first arg: vector<string> to matrix: vector<vector<char>>
 	* second arg: string to vector<char>
 	*/
-	static Task* createTask(std::string * dnaSequence, std::string * searchingDnaSequence, int, int, int);
+	static Task* createTask(std::string * dnaSequence, std::string * searchingDnaSequence, int, int, int, std::string);
 	static Aligment* createAligment(std::vector<aligmentStr> * vector, std::string algorithm);
 	static void copy(std::string * str, std::vector<char> * v, int length);
 

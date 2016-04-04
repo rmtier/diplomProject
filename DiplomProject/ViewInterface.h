@@ -31,8 +31,9 @@ private:
 	std::vector<Task*> doListOfMessages; ///<Thinks to do>
 	void initConsole();
 	void clearConsole();
-	void readFromFiles(std::string inputFileName, std::string compareFileName, std::string, int, int, int);
+	void readFromFiles(std::string inputFileName, std::string compareFileName, std::string, int, int, int, std::string);
 	std::string outFile;
+	void printAligment(Aligment * aligment, std::ostream * out);
 };
 
 

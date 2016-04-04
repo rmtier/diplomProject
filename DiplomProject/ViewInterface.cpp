@@ -20,9 +20,24 @@ bool ViewInterface::continueComputing()
 	std::string inputFile;
 	std::string compareFile;
 	std::string outFile;
+	std::string algorithm;
 	int match, missmatch, gap;
+	int algInt;
 
 	initConsole();
+	std::cout << "Vyber si algoritmus vypoctu stlacenim klavesy:\n\n";
+	std::cout << "  1. Needleman Wunch\n";
+	std::cout << "  2. Smith Waterman\n";
+	std::cout << "  3. Nukleotidovy Blast\n";
+	std::cin >> algInt;
+
+	switch (algInt)
+	{
+		case(1) : {algorithm = "NeedlemanWunch"; break; }
+		case(2) : {algorithm = "SmithWaterman"; break; }
+		case(3) : {algorithm = "Blast"; break; }
+		default: {return false; }
+	}
 	std::cout << "Zadaj vstupny subor s vzorkami genov:";
 	std::cin >> inputChar;
 	if (strcmp(inputChar, "e") == 0){
@@ -45,17 +60,13 @@ bool ViewInterface::continueComputing()
 	std::cin >> match;
 	std::cin >> missmatch;
 	std::cin >> gap;
-	readFromFiles(inputFile, compareFile, outFile, match, missmatch, gap);
+	readFromFiles(inputFile, compareFile, outFile, match, missmatch, gap, algorithm);
 	return true;
 }
 
 
 void ViewInterface::print(Aligment * aligment, long time, std::string algorithm)
 {
-	unsigned int i = 0;
-	unsigned int j = 0;
-	unsigned int l = 0;
-	unsigned int index = 0;
 	std::ofstream of;
 	std::ostream * out;
 
@@ -66,6 +77,7 @@ void ViewInterface::print(Aligment * aligment, long time, std::string algorithm)
 		*out << "Algorithm used for aligning: " << algorithm;
 		*out << "\nComputing aligning time:     " << time;
 		*out << "\nAligment:\n";
+		printAligment(aligment, out);
 	}
 	else
 	{
@@ -73,8 +85,17 @@ void ViewInterface::print(Aligment * aligment, long time, std::string algorithm)
 		out = &of;
 		*out << "Algorithm: " << algorithm << "; Time CPU: " << time;
 		*out << "\n";
+		printAligment(aligment, out);
+		of.close();
 	}
-	
+}
+
+void ViewInterface::printAligment(Aligment * aligment, std::ostream * out)
+{
+	unsigned int i = 0;
+	unsigned int j = 0;
+	unsigned int l = 0;
+	unsigned int index = 0;
 	while (aligment->getAligment()->size() > index)
 	{
 		i = 0;
@@ -90,7 +111,7 @@ void ViewInterface::print(Aligment * aligment, long time, std::string algorithm)
 		}
 		*out << "\n";
 		l = 0;
-		while (l < NUMBEROFROWININTERFACE && aligment->getAligment()->size() > ( index + l))
+		while (l < NUMBEROFROWININTERFACE && aligment->getAligment()->size() >(index + l))
 		{
 			*out << aligment->getAligment()->at(index + l).second; l++;
 		}
@@ -98,14 +119,13 @@ void ViewInterface::print(Aligment * aligment, long time, std::string algorithm)
 		*out << "\n\n";
 	}
 }
-
 /*
 * Read input from files
 * @param inputFileName - name of file that contain byte array of dna sequences
 * @param compareFileName - name of File that contain aligning dna sequence(with array of dna sequences)
 * @param outFileName - name of output file(default console)
 */
-void ViewInterface::readFromFiles(std::string inputFileName, std::string compareFileName, std::string outFileName, int match, int missmatch, int gap)
+void ViewInterface::readFromFiles(std::string inputFileName, std::string compareFileName, std::string outFileName, int match, int missmatch, int gap, std::string algorithm)
 {
 	std::ifstream inputFile;
 	std::ifstream compareFile;
@@ -139,7 +159,7 @@ void ViewInterface::readFromFiles(std::string inputFileName, std::string compare
 		std::cout << e;
 	}
 	
-	doListOfMessages.push_back(MessageBuilder::createTask(&inStream.str(), &inStream2.str(), match, missmatch, gap));
+	doListOfMessages.push_back(MessageBuilder::createTask(&inStream.str(), &inStream2.str(), match, missmatch, gap, algorithm));
 }
 
 void ViewInterface::initConsole()

@@ -11,7 +11,13 @@ Task::Task()
 Task::~Task()
 {
 	if (dnaSequence != NULL)
+	{
 		delete dnaSequence;
+		dnaSequence = NULL;
+	}
 	if (searchingDNAsequence != NULL)
+	{
 		delete searchingDNAsequence;
+		searchingDNAsequence = NULL;
+	}
 }

@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 enum ALGORITHM{
-	NEEDLEMAN_WUNCH,
+	NEEDLEMAN_WUNCH, SMITH_WATERMAN, BLAST
 };
 /*
 * @author: Rami Mtier

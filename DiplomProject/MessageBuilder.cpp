@@ -4,7 +4,7 @@ MessageBuilder::MessageBuilder()
 {
 }
 
-Task* MessageBuilder::createTask(std::string * dnaSequence, std::string * searchingDnaSequence, int match, int missmatch, int gap){
+Task* MessageBuilder::createTask(std::string * dnaSequence, std::string * searchingDnaSequence, int match, int missmatch, int gap, std::string algorithm){
 	int i = 0;
 	std::vector<char> * searchingDnaVector = new std::vector<char>(searchingDnaSequence->size(), '\0');
 	std::vector<char> * dnaVector = new std::vector<char>(dnaSequence->size(), '\0');
@@ -14,7 +14,13 @@ Task* MessageBuilder::createTask(std::string * dnaSequence, std::string * search
 
 	Task* message = new Task();
 
-	message->algorithm = NEEDLEMAN_WUNCH;
+	if (algorithm == "NeedlemanWunch")
+		message->algorithm = NEEDLEMAN_WUNCH;
+	else if (algorithm == "SmithWaterman")
+		message->algorithm = SMITH_WATERMAN;
+	else if (algorithm == "Blast")
+		message->algorithm = BLAST;
+
 	message->dnaSequence = dnaVector;
 	message->searchingDNAsequence = searchingDnaVector;
 	message->match = match;

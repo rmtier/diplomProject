@@ -1,25 +1,26 @@
-#include "NeedlemanWunschAlgorithm.h"
-#include <stdlib.h>
+#include "SmithWatermanAlgorithm.h"
 
-NeedlemanWunschAlgorithm::NeedlemanWunschAlgorithm()
+
+SmithWatermanAlgorithm::SmithWatermanAlgorithm()
 {
 }
 
 
-NeedlemanWunschAlgorithm::~NeedlemanWunschAlgorithm()
+SmithWatermanAlgorithm::~SmithWatermanAlgorithm()
 {
 }
+
 /*
 * @param sequence of gens
 * @param sequence of gens
 *
 * @return
-* function compute aligment and return it in vector of pairs std::vector<std::pair<char, char>> 
+* function compute aligment and return it in vector of pairs std::vector<std::pair<char, char>>
 * it is look like:
 * A T G T A     A T A
 * A T A T A     A T A
 */
-std::vector<aligmentStr> * NeedlemanWunschAlgorithm::alignSequences(std::vector<char> * firstSequence, std::vector<char> * secondSequence, int match, int mismatch, int gap)
+std::vector<aligmentStr> * SmithWatermanAlgorithm::alignSequences(std::vector<char> * firstSequence, std::vector<char> * secondSequence, int match, int mismatch, int gap)
 {
 	const int sizeOfFirstSequence = firstSequence->size();
 	const int sizeOfSecondSequence = secondSequence->size();
@@ -34,7 +35,7 @@ std::vector<aligmentStr> * NeedlemanWunschAlgorithm::alignSequences(std::vector<
 
 	//matrixValue ** matrix = ((matrixValue**)malloc(sizeOfVertical* sizeof(matrixValue*)));
 	matrixValue ** matrix = new matrixValue*[sizeOfVertical];
-	
+
 	for (int i = 0; i < sizeOfVertical; i++)
 	{
 		//matrix[i] = ((matrixValue*) malloc(sizeOfHorizontal * sizeof(matrixValue)));
@@ -45,13 +46,13 @@ std::vector<aligmentStr> * NeedlemanWunschAlgorithm::alignSequences(std::vector<
 	for (int j = 0; j < sizeOfHorizontal; j++)
 	{
 		matrix[0][j].value = init;
-		init += gap;
+		//init += gap;
 	}
-	init = 0;
+	//init = 0;
 	for (int i = 0; i < sizeOfVertical; i++)
 	{
 		matrix[i][0].value = init;
-		init += gap;
+		//init += gap;
 	}
 
 	//fill the matrix 
@@ -66,7 +67,7 @@ std::vector<aligmentStr> * NeedlemanWunschAlgorithm::alignSequences(std::vector<
 
 			verticalValue = matrix[i - 1][j].value + gap;
 			horizontalValue = matrix[i][j - 1].value + gap;
-			if (firstSequence->at(j-1) == secondSequence->at(i-1))
+			if (firstSequence->at(j - 1) == secondSequence->at(i - 1))
 				diagonalValue = match + matrix[i - 1][j - 1].value;
 			else
 				diagonalValue = mismatch + matrix[i - 1][j - 1].value;
@@ -75,14 +76,14 @@ std::vector<aligmentStr> * NeedlemanWunschAlgorithm::alignSequences(std::vector<
 			{
 				maxValue = verticalValue;
 				direction.vertical = 0;
-			} 
+			}
 			else if (horizontalValue == verticalValue)
 			{
 				maxValue = verticalValue;
 				direction.vertical = 0;
 				direction.horizontal = 0;
 			}
-			else 
+			else
 			{
 				maxValue = horizontalValue;
 				direction.horizontal = 0;
@@ -97,38 +98,41 @@ std::vector<aligmentStr> * NeedlemanWunschAlgorithm::alignSequences(std::vector<
 			{
 				direction.diagonal = 0;
 			}
+			if (maxValue < 0)
+			{
+				maxValue = 0;
+			}
 			matrix[i][j].value = maxValue;
 			matrix[i][j].diagonal = direction.diagonal;	//can be faster
 			matrix[i][j].vertical = direction.vertical;
 			matrix[i][j].horizontal = direction.horizontal;
 		}
 	}
-	
+
 	//trace back
 	maxValue = INT_MIN;
-	int i = sizeOfVertical-1;
-	int j = sizeOfHorizontal-1;
+	int i = sizeOfVertical - 1;
+	int j = sizeOfHorizontal - 1;
 	int iCoordinate = 0;
 	int jCoordinate = 0;
-	//finding highest value
-	//for (; i >= 0; i--)
-	//{
-		for (int i = 0; i < sizeOfVertical; i++)
+	//finding highest value in matrix
+	for (int i = 0; i < sizeOfVertical; i++)
+	{
+		for (int j = 0; j < sizeOfHorizontal; j++)
+		if (maxValue < matrix[i][j].value)
 		{
-			if (maxValue < matrix[i][j].value)
-			{
-				maxValue = matrix[i][j].value;
-				iCoordinate = i;
-				jCoordinate = j;
-			}
+			maxValue = matrix[i][j].value;
+			iCoordinate = i;
+			jCoordinate = j;
 		}
+	}
 	//}
 	//making aligment
 	matrixValue * last;
 	std::vector<aligmentStr> * aligment = new std::vector<aligmentStr>();
 	last = &matrix[iCoordinate][jCoordinate];
 	jCoordinate--; iCoordinate--;
-	while (jCoordinate >= 0 && iCoordinate >= 0)
+	while (last->value > 0)
 	{
 		aligmentStr * a = new aligmentStr;
 		if (last->diagonal == 0)
@@ -160,26 +164,11 @@ std::vector<aligmentStr> * NeedlemanWunschAlgorithm::alignSequences(std::vector<
 			jCoordinate--;
 			a->pipe = false;
 		}
-		
+
 		aligment->insert(aligment->begin(), *a);
-		last = &matrix[iCoordinate+1][jCoordinate+1];
+		last = &matrix[iCoordinate + 1][jCoordinate + 1];
 		delete a;
 	}
-	aligmentStr * a = new aligmentStr;
-
-	if (jCoordinate == 0 && iCoordinate < 0) //one of coordinate have to be zero
-	{
-		a->first = firstSequence->at(jCoordinate);
-		a->second = '-';
-		aligment->insert(aligment->begin(), *a);
-	}
-	else if (iCoordinate == 0 && jCoordinate < 0)
-	{
-		a->first = '-';
-		a->second = secondSequence->at(iCoordinate);
-		aligment->insert(aligment->begin(), *a);
-	}
-	delete a;
 
 	//free malloc matrix memory
 	for (int i = 0; i < sizeOfVertical; i++)
